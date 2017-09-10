@@ -7,7 +7,7 @@ Financial Contributions to Presidential Campaigns in Washington State.
 # Final Plots and Summary
 
 ### Plot One
-![Donator's age and gender structure for Candidate](./Donator's age and gender structure for Candidate.png)
+![Donator's age and gender structure for Candidate](./Donator's_age_and_gender_structure_for_Candidate.png)
 
 ### Description One
 After faceting by age, the plot shows that Hillary is more welcomed by female rather than male.
@@ -16,7 +16,7 @@ Sanders is welcomed by all age group no matter male or female.
 It seems that trump have good contribution distribution.
 
 ### Plot Two
-![Contribution Trend](./Contribution Trend.png)
+![Contribution Trend](./Contribution_Trend.png)
 
 ### Description Two
 Hillary's contribution went down to a valley after email controversy and then went up.
@@ -25,14 +25,14 @@ Trump's contribution is steadily low compared with Hillary.
 Though finally Hillary win in Washington State, it is hard to say there is really some strong relation between contribution and vote.
 
 ### Plot Three
-![Contribution Map](./Contribution Map.png)
+![Contribution Map](./Contribution_Map.png)
 
 ### Description Three
 Though Hillary have more contribution, it seems Trump's contribution have broader spread.
 But there are too many blank district. It is hard to get a conclusion.
 
 ### Plot Four
-![Occupation of donator](./Occupation of donator.png)
+![Occupation of donator](./Occupation_of_donator.png)
 
 
 This is the most exicting plot in the whole analysis. The plot shows strong and interesting relation between contributor occupation and candidate's background.
