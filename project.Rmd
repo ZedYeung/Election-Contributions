@@ -1,4 +1,4 @@
-TITLE by YOUR_NAME_HERE
+Zed
 ========================================================
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Packages}
@@ -15,7 +15,6 @@ library(gender)
 library(zipcode)
 library(corrplot)
 library(choroplethrZip)
-options(scipen=999)
 ```
 
 ```{r global_options, include=FALSE}
@@ -183,6 +182,7 @@ names(cand_gender_df)[4] <- 'cand_gender'
 
 wa <- merge(wa, cand_gender_df[, c(1, 4)], by = 'cand_first_nm', all.x = T)
 wa$cand_gender <- as.factor(wa$cand_gender)
+
 # Adjust date
 Sys.setlocale("LC_TIME", "C")
 wa$contb_receipt_dt <- as.Date(wa$contb_receipt_dt,format = "%d-%b-%y")
@@ -887,9 +887,9 @@ That is very interesting! There is strong and interesting relation between contr
 ```{r echo=FALSE, fig.width =8, fig.height = 10}
 elec_date <- as.Date('2016-11-8')
 republican_nomination_date <- as.Date('2016-7-21')
-democratic_nomination_date <- as.Date('2016-7-28')
+democrat_nomination_date <- as.Date('2016-7-28')
 republican_caucuses_date <- as.Date('2016-2-20')
-democratic_caucuses_date <- as.Date('2016-3-26')
+democrat_caucuses_date <- as.Date('2016-3-26')
 hillary_email <- as.Date('2016-7-22')
 
 ggplot(wa %>%
@@ -897,17 +897,34 @@ ggplot(wa %>%
          mutate(amt_cut = cut(contb_receipt_amt, breaks = c(0, 200, 500, 1000, 1500, 2700),
                               include.lowest = T, include.highest = T)), 
        aes(contb_receipt_dt)) +
-  scale_x_date(limits = as.Date(c('2015-03-01','2016-11-8')),
+  scale_x_date(limits = as.Date(c('2015-04-01','2016-11-8')),
                date_breaks = "1 month", date_labels =  "%b %Y") +
   geom_freqpoly(aes(color = cand_nm), binwidth = 7) +
-  geom_vline(xintercept=elec_date, color="purple") +
-  geom_vline(xintercept=republican_nomination_date, color="red") +
-  geom_vline(xintercept=democratic_nomination_date, color="blue") +
-  geom_vline(xintercept=republican_caucuses_date, color="red") +
-  geom_vline(xintercept=democratic_caucuses_date, color="blue") +
-  geom_vline(xintercept=hillary_email, color="gold") +
+  geom_vline(xintercept=elec_date, color="purple", linetype="dashed") + 
+  annotate("text", x=elec_date, label="Election", y=100,
+            angle=90, color="purple", size=4) +
+  geom_vline(xintercept=republican_nomination_date, color="red", linetype="dashed") +
+  annotate("text", x=as.Date('2016-7-4'),
+                label="Nomination", y=100,
+            angle=90, color="red", size=4) +
+  geom_vline(xintercept=democrat_nomination_date, color="blue", linetype="dashed") +
+  annotate("text", x=as.Date('2016-8-14'),
+                label="Nomination", y=100,
+            angle=90, color="blue", size=4) +
+  geom_vline(xintercept=republican_caucuses_date, color="#DC143C", linetype="dashed") +
+  annotate("text", x=republican_caucuses_date,
+                label="Caucuses", y=100,
+            angle=90, color="#DC143C", size=4) +
+  geom_vline(xintercept=democrat_caucuses_date, color="#6baed6", linetype="dashed") +
+  annotate("text", x=democrat_caucuses_date,
+                label="Caucuses", y=100,
+            angle=90, color="#6baed6", size=4) +
+  geom_vline(xintercept=hillary_email, color="gold", linetype="dashed") +
+  annotate("text", x=hillary_email,
+                label="Email", y=100,
+            angle=90, color="black", size=5) +
   facet_wrap(~amt_cut, ncol = 1, scales = "free_y") +
-  theme(axis.text.x=element_text(angle=60, hjust=1))
+  theme(axis.text.x=element_text(angle=60, hjust=1), legend.position = "bottom")
 ```
 
 Hillary's contribution went down to a valley after email controversy and then went up.
@@ -915,14 +932,7 @@ After the peak at around first week in October, the contribution slump down.
 Cannot figure out why.
 Trump's contribution is steadily low compared with Hillary.
 
-```{r echo=FALSE, fig.width =8, fig.height = 10}
-elec_date <- as.Date('2016-11-8')
-republican_nomination_date <- as.Date('2016-7-21')
-democratic_nomination_date <- as.Date('2016-7-28')
-republican_caucuses_date <- as.Date('2016-2-20')
-democratic_caucuses_date <- as.Date('2016-3-26')
-hillary_email <- as.Date('2016-7-22')
-
+```{r echo=FALSE, fig.width = 8, fig.height = 12}
 ggplot(wa %>%
          subset(!is.na(per_capita_income)) %>%
          subset(cand_nm == "Clinton, Hillary Rodham" | cand_nm == "Trump, Donald J.") %>%
@@ -931,17 +941,34 @@ ggplot(wa %>%
                                                 probs = c(0, .2, .35, .5, .65, .8, 1)),
                               include.lowest = T, include.highest = T)), 
        aes(contb_receipt_dt)) +
-  scale_x_date(limits = as.Date(c('2015-03-01','2016-11-8')),
+  scale_x_date(limits = as.Date(c('2015-12-01','2016-11-8')),
                date_breaks = "1 month", date_labels =  "%b %Y") +
   geom_freqpoly(aes(color = cand_nm), binwidth = 7) +
-  geom_vline(xintercept=elec_date, color="purple") +
-  geom_vline(xintercept=republican_nomination_date, color="red") +
-  geom_vline(xintercept=democratic_nomination_date, color="blue") +
-  geom_vline(xintercept=republican_caucuses_date, color="red") +
-  geom_vline(xintercept=democratic_caucuses_date, color="blue") +
-  geom_vline(xintercept=hillary_email, color="gold") +
+  geom_vline(xintercept=elec_date, color="purple", linetype="dashed") + 
+  annotate("text", x=elec_date, label="Election", y=1000,
+            angle=90, color="purple", size=4) +
+  geom_vline(xintercept=republican_nomination_date, color="red", linetype="dashed") +
+  annotate("text", x=as.Date('2016-7-4'),
+                label="Republican \nNomination", y=1000,
+            angle=90, color="red", size=4) +
+  geom_vline(xintercept=democrat_nomination_date, color="blue", linetype="dashed") +
+  annotate("text", x=as.Date('2016-8-14'),
+                label="Democrat \nNomination", y=1000,
+            angle=90, color="blue", size=4) +
+  geom_vline(xintercept=republican_caucuses_date, color="#DC143C", linetype="dashed") +
+  annotate("text", x=republican_caucuses_date,
+                label="Republican \nCaucuses", y=1000,
+            angle=90, color="#DC143C", size=4) +
+  geom_vline(xintercept=democrat_caucuses_date, color="#6baed6", linetype="dashed") +
+  annotate("text", x=democrat_caucuses_date,
+                label="Democrat \nCaucuses", y=1000,
+            angle=90, color="#6baed6", size=4) +
+  geom_vline(xintercept=hillary_email, color="gold", linetype="dashed") +
+  annotate("text", x=hillary_email,
+                label="Email", y=1000,
+            angle=90, color="black", size=5) +
   facet_wrap(~income_cut, ncol = 1, scales = "free_y") +
-  theme(axis.text.x=element_text(angle=60, hjust=1))
+  theme(axis.text.x=element_text(angle=60, hjust=1), legend.position = "bottom")
 ```
 
 Almost the same trend regardless of per capita income!
@@ -1096,33 +1123,46 @@ It seems that trump have good contribution distribution.
 
 ### Plot Two
 ```{r echo=FALSE, fig.width =8, fig.height = 10, Plot_Two}
-elec_date <- as.Date('2016-11-8')
-republican_nomination_date <- as.Date('2016-7-21')
-democratic_nomination_date <- as.Date('2016-7-28')
-republican_caucuses_date <- as.Date('2016-2-20')
-democratic_caucuses_date <- as.Date('2016-3-26')
-hillary_email <- as.Date('2016-7-22')
+day_annotation <- data.frame(x=c(elec_date, hillary_email, republican_nomination_date,
+                                   democrat_nomination_date, as.Date("2016-02-01"),
+                                   as.Date("2016-04-01")),
+                               y=c(5000, 400, 100, 10, 50, 50),
+                               label=c("Election"," Email",
+                                       "Republican \nNomination",
+                                   "Democrat \nNomination", "Republican \nCaucuses",
+                                   "Democrat \nCaucuses"),
+                               angle = rep(90, 6),
+                               cut = c("0-200", "200-500", "500-1000", 
+                                         "1000-1500", "1500-2700", "1500-2700"))
 
 ggplot(wa %>%
          subset(cand_nm == "Clinton, Hillary Rodham" | cand_nm == "Trump, Donald J.") %>%
-         mutate(amt_cut = cut(contb_receipt_amt, breaks = c(0, 200, 500, 1000, 1500, 2700),
-                              include.lowest = T, include.highest = T)), 
+         mutate(amt_cut = as.factor(cut(contb_receipt_amt,
+                                     breaks = c(0, 200, 500, 1000, 1500, 2700),
+                              include.lowest = T, include.highest = T))) %>%
+         mutate(cut = factor(amt_cut,
+                labels = c("0-200", "200-500", "500-1000", 
+                           "1000-1500", "1500-2700"))), 
        aes(contb_receipt_dt)) +
   scale_x_date(limits = as.Date(c('2015-03-01','2016-11-8')),
                date_breaks = "1 month", date_labels =  "%b %Y") +
   geom_freqpoly(aes(color = cand_nm), binwidth = 7) +
   geom_vline(xintercept=elec_date, color="purple") +
-  geom_vline(xintercept=republican_nomination_date, color="red") +
-  geom_vline(xintercept=democratic_nomination_date, color="blue") +
-  geom_vline(xintercept=republican_caucuses_date, color="red") +
-  geom_vline(xintercept=democratic_caucuses_date, color="blue") +
-  geom_vline(xintercept=hillary_email, color="gold") +
-  facet_wrap(~amt_cut, ncol = 1, scales = "free_y") +
+  geom_vline(xintercept=republican_nomination_date, color="red", linetype="dashed") +
+  geom_vline(xintercept=democrat_nomination_date, color="blue", linetype="dashed") +
+  geom_vline(xintercept=republican_caucuses_date, color="red", linetype="dotted") +
+  geom_vline(xintercept=democrat_caucuses_date, color="blue", linetype="dotted") +
+  geom_vline(xintercept=hillary_email) +
+  facet_wrap(~cut, ncol = 1, scales = "free_y") +
+  geom_text(data=day_annotation,
+          aes(x, y, label=label, angle=angle), inherit.aes=F) +
   labs(title = "Contribution Trend", x = "Date", y = "Count") +
   theme(axis.text.x=element_text(angle=60, hjust=1))
 ```
 
 ### Description Two
+After working all night, finnaly I add annotation to different facet at different coordination.
+
 Hillary's contribution went down to a valley after email controversy and then went up. 
 After the peak at around first week in October, the contribution slump down. Cannot figure out why. 
 Trump's contribution is steadily low compared with Hillary. 
