@@ -1167,12 +1167,12 @@ trump_occupation_amt <- wa.amt_occupation_trump %>%
 p1 <- ggplot(hillary_occupation_amt, aes(reorder(contbr_occupation, n), n)) +
   geom_bar(stat = "identity", aes(fill = contbr_occupation)) +
   coord_flip() +
-  labs(title = "Occupation of Hillary's donator ", x = "Occupation", y = "count",
+  labs(title = "Occupation of Hillary's donator", x = "Occupation", y = "count",
        fill ="Occupation")
 p2 <- ggplot(trump_occupation_amt, aes(reorder(contbr_occupation, n), n)) +
   geom_bar(stat = "identity", aes(fill = contbr_occupation)) +
   coord_flip() +
-  labs(title = "Occupation of Trump's donator ", x = "Occupation", y = "count",
+  labs(title = "Occupation of Trump's donator", x = "Occupation", y = "count",
        fill = "Occupation")
 grid.arrange(p1, p2)
 ```
