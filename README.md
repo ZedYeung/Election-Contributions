@@ -1,6 +1,5 @@
 # Exploratory Data Analysis using R
-Conduct exploratory data analysis and create an RMD file that explores the
-variables, structure, patterns, oddities, and underlying relationships of a data set.
+Conduct exploratory data analysis and create an RMD file that explores the variables, structure, patterns, oddities, and underlying relationships of a data set.
 
 # Data Set
 Financial Contributions to Presidential Campaigns in Washington State.
@@ -36,7 +35,7 @@ But there are too many blank district. It is hard to get a conclusion.
 ![Occupation of donator](./Occupation of donator.png)
 
 
-This is the most exicting plot in the whole analysis. The plot shows strong and interesting relation between contributor occupation and candidate's backgroud.
+This is the most exicting plot in the whole analysis. The plot shows strong and interesting relation between contributor occupation and candidate's background.
 
 As for Hillary, the top 1 occupation is attorney, and the 11th is lawyer. Yeah, we all know that Hillary once belong to this group
 The second is homemaker, it tells that Hillary really welcomed by female.
@@ -47,6 +46,7 @@ And then we can see that in top 10, there are CEO, president, business owner, ow
 What is more, Trump also have a group donator with occupation like contractor, project manager, real estate.
 
 The Hillary is supported by nurse while Trump is supported by farmer.
+
 # Reflection
 
 The contribution map shows that many district have no contribution at all. I don't know this is because of data quality or that is the truth. Maybe Washington State is not a good data set to analyze election compaign.
@@ -55,12 +55,12 @@ It is hard to figure out strong relation between election result and contributio
 
 There is really strong relation between contribution and date.
 
-The strongest relation is candidate and their donator's occupation, which can be indicated by bar plot but not correlation.
+The strongest relation is candidate and their donators' occupation, which can be indicated by bar plot but not correlation.
 
 Since contribution have limit and influence by many factor, I think building model to predict contribution is nearly impossible.
 
-The data quality is not good enough and even missing due to different expreesion, manual error and some other unknown reason.
+The data quality is not good enough and even missing due to different expreession, manual error and some other unknown reason.
 
 It would be helpful to import some vote, demographic and geographic data to cross-validate and supply the election contribution data set.
 
-I think using the larger dataset like the whole USA data set would discover some more interesting relaion.
+I think using the larger dataset like the whole USA data set would discover some more interesting relation.
