@@ -1245,3 +1245,13 @@ The data quality is not good enough and even missing due to different expreesion
 It would be helpful to import some vote, demographic and geographic data to cross-validate and supply the election contribution data set.
 
 I think using the larger dataset like the whole USA data set would discover some more interesting relaion.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Reference}
+# Reference
+# https://rpubs.com/gary7135/udacity-2016-campaign-finance
+# https://github.com/susanli2016/udacity-data-analyst/blob/master/p4/Financial_Contribution_to_2016_Presidential_Campaign_MA.Rmd
+# https://github.com/winkelman/udacity-dand-eda/blob/master/campaign-contributions-ohio-2012.csv
+# https://github.com/winkelman/udacity-dand-eda/blob/master/project.Rmd
+# https://stackoverflow.com/questions/11023129/using-annotate-to-add-different-annotations-to-different-facets
+# https://stackoverflow.com/questions/10680658/how-can-i-create-a-correlation-matrix-in-r
+```
