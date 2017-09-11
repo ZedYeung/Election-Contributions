@@ -22,7 +22,10 @@ knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
 ```
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Load_the_Data}
-# At first, I try read.csv('P00000001-WA.csv', row.names = NULL) to read the data, but it still use first column as row names. Consequently, I use python to delete some useless columns like transaction id and some text and then add index column so it can be read correctly by R.
+# At first, I try read.csv('P00000001-WA.csv', row.names = NULL) to read data,
+# but it still use first column as row names.
+# Consequently, I use python to delete some useless columns like transaction id
+# and some text and then add index column so it can be read correctly by R.
 wa <- read.csv('selected.csv')
 wa <- subset(wa, select = -X)
 # http://simplemaps.com/data/us-cities
@@ -35,19 +38,22 @@ data("zipcode")
 
 # Univariate Plots Section
 
-> **Tip**: This is Financial Contributions to Presidential Campaigns in WA data set.
+> **Tip**: This is Financial Contributions to Presidential Campaigns in WA data
+set from http://classic.fec.gov/disclosurep/PDownload.do.
 
 ```{r echo=FALSE, summary_import_data}
 str(wa)
 summary(wa)
 ```
-In 2016 Presidential Campaign Finance, contributor raw data in WA have 292317 observations and 19 variables, each observation indicates a donation transaction.
-And then I delete 10 columns by python. So the data import to R have 9 variables and 292317 observations.
+In 2016 Presidential Campaign Finance, contributor raw data in WA have 292317 observations and 19 variables, each observation records a donation transaction.
+And then I delete 10 columns by python. So the data import to R have 9 variables
+and 292317 observations.
 
 ```{r echo=FALSE, summary_contb_receipt_amt}
 summary(wa$contb_receipt_amt)
 ```
-summary the contb_receipt_amt and find that there are some minus value. Obviously, we need to delete these observations.
+summary the contb_receipt_amt and find that there are some minus value. 
+Obviously, we need to delete these observations.
 
 ```{r echo=FALSE, filter}
 wa <- subset(wa, contb_receipt_amt > 0 & contb_receipt_amt <= 2700)
@@ -63,7 +69,8 @@ ggplot(wa, aes(contb_receipt_amt)) +
 
 ```
 
-obviously, most donate amount are small and there are some extremely high amount value outliers. Consequently, it is neccessary to use log10 transform for better distribution histogram.
+obviously, most donate amount are small and there are some extremely high amount
+value outliers. Consequently, it is neccessary to use log10 transform for better distribution histogram.
 
 ```{r echo=FALSE}
 ggplot(wa, aes(contb_receipt_amt)) +
@@ -84,8 +91,8 @@ log_normal_test <- function(df, v) {
   }
   print(shapiro.test(log_normal_sample))
   # qqplot
-  ggplot(as.data.frame(log_normal), aes(sample = log_normal)) + 
-    stat_qq()
+  # ggplot(as.data.frame(log_normal), aes(sample = log_normal)) + 
+  #   stat_qq()
 }
 ```
 
@@ -102,8 +109,8 @@ normal_test <- function(df, v) {
   }
   print(shapiro.test(normal_sample))
   # qqplot
-  ggplot(as.data.frame(normal), aes(sample = normal)) + 
-    stat_qq()
+  # ggplot(as.data.frame(normal), aes(sample = normal)) + 
+  #   stat_qq()
 }
 ```
 
@@ -111,6 +118,13 @@ normal_test <- function(df, v) {
 plot_hist <- function(df, v) {
   ggplot(df, aes_string(v)) +
     geom_histogram(fill = "#2b8cbe", color = "black")
+}
+```
+
+```{r echo=FALSE, plot_bar_function}
+plot_bar <- function(df, v) {
+  ggplot(df, aes_string(v)) +
+    geom_bar()
 }
 ```
 
@@ -147,9 +161,12 @@ we can see that 80% of the donates are less than 100$.
 And then, I need to add more variables to explore potential interesting pattern.
 ```{r echo=FALSE, include=FALSE, Add_and_modify_variables}
 # create party variables
-democrat <- c("Clinton, Hillary Rodham", "Sanders, Bernard", "O'Malley, Martin Joseph", "Lessig, Lawrence", "Webb, James Henry Jr.")
+democrat <- c("Clinton, Hillary Rodham", "Sanders, Bernard",
+              "O'Malley, Martin Joseph", "Lessig, Lawrence",
+              "Webb, James Henry Jr.")
 wa$party <- ifelse(wa$cand_nm %in% democrat, "democrat", "republican")
-wa$party[wa$cand_nm %in% c("Johnson, Gary", "McMullin, Evan", "Stein, Jill")] <- 'others'
+wa$party[wa$cand_nm %in% c("Johnson, Gary",
+                           "McMullin, Evan", "Stein, Jill")] <- 'others'
 wa$party <- as.factor(wa$party)
 
 # clean contbr_nms of 1, 2, and 3 letter abbreviations (MR., DR., A., MRS.)
@@ -167,7 +184,8 @@ contbr_gender_df <- gender(wa$contbr_first_nm, method = 'ssa', c(1932, 1966),
 contbr_gender_df <- unique(contbr_gender_df)
 names(contbr_gender_df)[1] <- 'contbr_first_nm'
 names(contbr_gender_df)[4] <- 'contbr_gender'
-wa <- merge(wa, contbr_gender_df[, c(1, 4)], by = 'contbr_first_nm', all.x = T)
+wa <- merge(wa, contbr_gender_df[, c(1, 4)],
+            by = 'contbr_first_nm', all.x = T)
 wa$contbr_gender <- as.factor(wa$contbr_gender)
 
 # Get candidate's firs name for gender predication
@@ -194,50 +212,58 @@ wa$contbr_zip[!(wa$contbr_zip >= 98001 & wa$contbr_zip <= 99403)] <- 'NA'
 wa$contbr_occupation <- as.factor(wa$contbr_occupation)
 ```
 
-```{r echo=FALSE, include=FALSE}
-tail(unique(wa[, c('contbr_first_nm', "contbr_nm")][order(wa$contbr_first_nm),]),
-     100)
-
-head(unique(wa[, c('cand_first_nm', "cand_nm")][order(wa$cand_first_nm),]))
-
-```
-
-
-```{r echo=FALSE}
-table(wa$contbr_gender)
-```
-number of male and female contributors
-
 ```{r echo=FALSE}
 cand <- wa[, c('cand_nm', 'cand_first_nm', 'cand_gender', 'party')]
 cand <- unique(cand)
+```
+
+```{r echo=FALSE}
+plot_bar(wa, "contbr_gender")
+table(wa$contbr_gender)
+```
+
+number of male and female contributors
+
+```{r echo=FALSE}
+plot_bar(cand, "cand_gender")
 table(cand$cand_gender)
+```
+
+
+```{r echo=FALSE}
+plot_bar(cand, "party")
 table(cand$party)
 ```
 number of male and female candidates
 number of party candidates
 
 ```{r echo=FALSE}
+plot_bar(wa, "election_tp")
+```
+
+```{r echo=FALSE}
 city_freq <- as.data.frame(sort(table(wa$contbr_city), decreasing = T))
+colnames(city_freq) <- c("city", "Freq")
 
 ```
 
 ```{r echo=FALSE}
-summary(city_freq$Freq)
 dim(city_freq)
+summary(city_freq$Freq)
 quantile(city_freq$Freq, 0.95)
 
 ```
 
-There are 717 different city because of misspelling, shorten or long detail name.
-One solution is to use zipcode to cross-validate.
+There are 717 different cities because of misspelling, shorten or long detail
+name. One solution is to use zipcode to cross-validate.
+95% of these cities count are less than 1423.
 
 ```{r echo=FALSE}
 #wa$contbr_city <- ifelse(wa$contbr_city %in% city.wa$city, wa$contbr_city,)
 ```
 
 ```{r echo=FALSE}
-ggplot(subset(city_freq, Freq > 2000), aes(Var1, Freq)) +
+ggplot(subset(city_freq, Freq > 2000), aes(city, Freq)) +
   geom_bar(stat = 'identity') +
   coord_flip() +
   theme(axis.text.y = element_text(hjust = 0, size = 10),
@@ -253,6 +279,7 @@ log_normal_test(city_freq, 'Freq')
 ```{r echo=FALSE}
 occupation_freq <- as.data.frame(sort(table((wa$contbr_occupation)),
                                       decreasing = T))
+colnames(occupation_freq) <- c("occupation", "Freq")
 ```
 
 ```{r echo=FALSE}
@@ -265,7 +292,7 @@ There are 8260 different occupation!
 95% of them have less than 59 people.
 
 ```{r echo=FALSE}
-ggplot(subset(occupation_freq, Freq > 1000), aes(Var1, Freq)) +
+ggplot(subset(occupation_freq, Freq > 1000), aes(occupation, Freq)) +
   geom_bar(stat = 'identity') +
   theme(axis.text.y = element_text(hjust = 0)) +
   coord_flip()
@@ -277,6 +304,7 @@ log_normal_test(occupation_freq, 'Freq')
 
 ```{r echo=FALSE, fig.width = 10, fig.height=5}
 zip_freq <- as.data.frame(sort(table((wa$contbr_zip)), decreasing = T))
+colnames(zip_freq) <- c("zipcode", "Freq")
 
 ```
 
@@ -288,7 +316,7 @@ dim(zip_freq)
 There 646 different zipcode.
 
 ```{r echo=FALSE, fig.width = 10, fig.height=5}
-ggplot(subset(zip_freq, Freq > 100), aes(Var1, Freq)) +
+ggplot(subset(zip_freq, Freq > 100), aes(zipcode, Freq)) +
   geom_bar(stat = 'identity') +
   theme(axis.text.y = element_text(hjust = 0),
         plot.margin = margin(0.1, 0.1, 0.1, 0.1)) +
@@ -300,10 +328,7 @@ ggplot(subset(zip_freq, Freq > 100), aes(Var1, Freq)) +
 log_normal_test(zip_freq, 'Freq')
 ```
 
-```{r echo=FALSE}
-ggplot(wa, aes(election_tp)) +
-  geom_bar()
-```
+
 
 Moreover, I add additional variables about demographic data to the dataset.
 
@@ -371,11 +396,17 @@ There are 8 demographic variables coming from df_zip_demographics data set:
 There are a lot of categorical but no ordered factor.
 
 ### What is/are the main feature(s) of interest in your dataset?
-The main features of interest in the data set are contbr_amt, party, cand_name,  contbr_gender, total_population, per_capita_income, percent_white and median_age. I hope these variables can be used to build a predictive model to predict contribution amount to which party.
+The main features of interest in the data set are contbr_amt, party,
+cand_name,  contbr_gender, total_population, per_capita_income, percent_white
+and median_age.
+I hope these variables can be used to build a predictive model to predict
+contribution amount to which party.
 
 ### What other features in the dataset do you think will help support your \
 investigation into your feature(s) of interest?
-I think contbr_zip, contbr_occupation, contb_receipt_dt, cand_gender, median_rent, percent_black, ercent_asian, percent_hispanic, election_tp are all relevant to contribution amount.  
+I think contbr_zip, contbr_occupation, contb_receipt_dt, cand_gender,
+median_rent, percent_black, ercent_asian, percent_hispanic, election_tp are
+all relevant to contribution amount.  
 
 ### Did you create any new variables from existing variables in the dataset?
 There are 5 derived variables:   
@@ -395,12 +426,13 @@ of the data? If so, why did you do this?
 The contribution have amount less than 0 and larger than 2700, which is illegal.
 I just remove these rows.
 
-The largest three group of contributors by occupation are retirees, NOT EMPLOYED and INFORMATION REQUESTED.
+The largest three group of contributors by occupation are retirees, NOT EMPLOYED
+and INFORMATION REQUESTED.
 
 The election type have one blank type, no idea what it is.
 
-There are 717 different city because of misspelling, shorten or long detail name.
-One solution is to use zipcode to cross-validate.
+There are 717 different cities because of misspelling, shorten or long detail
+name. One solution is to use zipcode to cross-validate.
 
 There are 8260 different occupation! 95% of them have less than 59 people.
 
@@ -448,27 +480,6 @@ ggpairs(subset(wa_pairs, select = -contbr_gender))
 ```
 
 ```{r echo=FALSE}
-ggplot(wa, aes(contb_receipt_amt)) +
-  geom_freqpoly(aes(color = party)) +
-  scale_x_log10()
-```
-
-```{r echo=FALSE}
-ggplot(subset(wa, !is.na(contbr_gender)),
-              aes(contb_receipt_amt, ..count../sum(..count..))) +
-  geom_freqpoly(aes(color = contbr_gender)) +
-  scale_x_log10()
-```
-
-```{r echo=FALSE}
-ggplot(subset(wa, !is.na(election_tp)),
-       aes(contb_receipt_amt)) +
-  geom_freqpoly(aes(color = election_tp)) +
-  scale_x_log10()
-# can't figure out what the red line represent, since na were already filtered.
-```
-
-```{r echo=FALSE}
 plot_point <- function(x, y) {
   ggplot(wa, aes_string(x, y)) +
     geom_jitter(alpha = 0.02) +
@@ -486,6 +497,19 @@ grid.arrange(p1, p2, p3, p4)
 ```
 
 Some interesting demographic relation.
+
+```{r echo=FALSE}
+ggplot(subset(wa, !is.na(election_tp)),
+       aes(election_tp, contb_receipt_amt)) +
+  geom_boxplot(aes(color = election_tp)) +
+  scale_y_log10()
+```
+
+```{r echo=FALSE}
+ggplot(wa, aes(party, contb_receipt_amt)) +
+  geom_boxplot() +
+  scale_y_log10()
+```
 
 ```{r echo=FALSE}
 wa.amt_by_party <- wa %>%
@@ -540,13 +564,11 @@ wa.amt_by_income <- wa %>%
 ```
 
 ```{r echo=FALSE}
-p1 <- ggplot(wa.amt_by_income, aes(round(per_capita_income / 1000) * 1000, amt_sum)) +
-  geom_line()
-p2 <- ggplot(wa.amt_by_income, aes(round(per_capita_income / 1000) * 1000)) +
-  geom_line(aes(y = amt_median, color = 'blue')) +
-  geom_line(aes(y = amt_mean, color = 'red')) +
+p1 <- ggplot(wa, aes(per_capita_income, contb_receipt_amt)) +
+  geom_point(alpha=0.01)
+p2 <- ggplot(wa, aes(per_capita_income, contb_receipt_amt)) +
+  geom_point(alpha=0.01) +
   scale_x_continuous(breaks = seq(0, 100000, 25000)) +
-  scale_color_manual(labels = c("median amount", "mean amount"), values = c("blue", "red")) +
   theme(legend.position = 'bottom')
 grid.arrange(p1, p2, ncol = 1)
 ```
@@ -572,12 +594,14 @@ p2 <- ggplot(wa.amt_by_age, aes(median_age)) +
   scale_x_continuous(breaks = seq(20, 60, 10)) +
   geom_line(aes(y = amt_median, color = 'blue')) +
   geom_line(aes(y = amt_mean, color = 'red')) +
-  scale_color_manual(labels = c("median amount", "mean amount"), values = c("blue", "red")) +
+  scale_color_manual(labels = c("median amount", "mean amount"),
+                     values = c("blue", "red")) +
   theme(legend.position = 'bottom')
 grid.arrange(p1, p2, ncol = 1)
 ```
 
-It shows that people about 40 make the most contribution, but the people about 30 make the highest median contribution. 
+It shows that people about 40 make the most contribution, but the people about
+30 make the highest median contribution. 
 There also two other peaks at 25 and 60 in median amount plot.
 
 ```{r echo=FALSE}
@@ -620,24 +644,33 @@ wa.amt_by_percent_hispanic <- wa %>%
   arrange(percent_hispanic)
 ```
 
-In addition, I Group the contb_receipt_amt by contribution by population structure.
+In addition, I Group the contb_receipt_amt by contribution by
+population structure.
 
 ```{r echo=FALSE}
 p1 <- ggplot() +
-  geom_line(data = wa.amt_by_percent_white, aes(percent_white, amt_sum, color = 'blue')) +
-  geom_line(data = wa.amt_by_percent_black, aes(percent_black, amt_sum, color = 'black')) +
-  geom_line(data = wa.amt_by_percent_asian, aes(percent_asian, amt_sum, color = 'orange')) +
-  geom_line(data = wa.amt_by_percent_hispanic, aes(percent_hispanic, amt_sum, color = 'red')) +
+  geom_line(data = wa.amt_by_percent_white,
+            aes(percent_white, amt_sum, color = 'blue')) +
+  geom_line(data = wa.amt_by_percent_black,
+            aes(percent_black, amt_sum, color = 'black')) +
+  geom_line(data = wa.amt_by_percent_asian,
+            aes(percent_asian, amt_sum, color = 'orange')) +
+  geom_line(data = wa.amt_by_percent_hispanic,
+            aes(percent_hispanic, amt_sum, color = 'red')) +
   scale_x_continuous(breaks = seq(0, 100, 10)) +
   scale_colour_manual(labels = c("percent_white", "percent_black", 
                                  "percent_asian", "percent_hispanic"),
                       values=c("blue","black","orange", "red"))
   
 p2 <- ggplot() +
-  geom_line(data = wa.amt_by_percent_white, aes(percent_white, amt_mean, color = 'blue')) +
-  geom_line(data = wa.amt_by_percent_black, aes(percent_black, amt_mean, color = 'black')) +
-  geom_line(data = wa.amt_by_percent_asian, aes(percent_asian, amt_mean, color = 'orange')) +
-  geom_line(data = wa.amt_by_percent_hispanic, aes(percent_hispanic, amt_mean, color = 'red')) +
+  geom_line(data = wa.amt_by_percent_white,
+            aes(percent_white, amt_mean, color = 'blue')) +
+  geom_line(data = wa.amt_by_percent_black,
+            aes(percent_black, amt_mean, color = 'black')) +
+  geom_line(data = wa.amt_by_percent_asian,
+            aes(percent_asian, amt_mean, color = 'orange')) +
+  geom_line(data = wa.amt_by_percent_hispanic,
+            aes(percent_hispanic, amt_mean, color = 'red')) +
   scale_x_continuous(breaks = seq(0, 100, 10)) +
   scale_colour_manual(labels = c("percent_white", "percent_black", 
                                  "percent_asian", "percent_hispanic"),
@@ -666,7 +699,8 @@ ggplot(wa, aes(contb_receipt_dt)) +
   theme(axis.text.x=element_text(angle=60, hjust=1))
 ```
 
-People make more and more contribution when the election day and other big day are closer and closer. I wonder what that valley is.
+People make more and more contribution when the election day and other
+big day are closer and closer. I wonder what that valley is.
 
 
 # Bivariate Analysis
@@ -683,10 +717,12 @@ Democrat's total contribution is more than Republican, but Replublican's mean co
 People have around 70000 income make the most contribution. 
 Male make more contribution than female on both sum and mean, but not much. 
 There is some high contribution outlier at low income, which seems very weird.  
-people about 40 make the most contribution, but the people about 30 make the highest median contribution. 
+people about 40 make the most contribution,
+but the people about 30 make the highest median contribution. 
 There is one weird peak at about 22 in sum contribution.  
 There are also two other peaks at 25 and 60 in median contribution. 
-People make more and more contribution when the election day and other big day are closer and closer. 
+People make more and more contribution when the election day and other big day
+are closer and closer. 
 
 ### Did you observe any interesting relationships between the other features \
 (not the main feature(s) of interest)?
@@ -727,14 +763,16 @@ ggplot(wa, aes(cand_nm, log(contb_receipt_amt + 1))) +
 ```{r echo=FALSE}
 ggplot(wa, aes(cand_nm, log(contb_receipt_amt + 1))) +
   geom_boxplot(aes(color = cand_gender)) +
-  theme(axis.text.x=element_text(angle=60, hjust=1), legend.position = "bottom")
+  theme(axis.text.x=element_text(angle=60, hjust=1),
+        legend.position = "bottom")
 ```
 
 ```{r echo=FALSE}
 ggplot(subset(wa, !is.na(contbr_gender)),
        aes(cand_nm, log(contb_receipt_amt + 1))) +
   geom_boxplot(aes(color = contbr_gender)) +
-  theme(axis.text.x=element_text(angle=60, hjust=1), legend.position = "bottom")
+  theme(axis.text.x=element_text(angle=60, hjust=1),
+        legend.position = "bottom")
 # color = ifelse(wa$cand_gender == 'male', 'blue', 'red')))
 # color the x axis text according to candidate gender
 ```
@@ -747,7 +785,7 @@ ggplot(wa %>%
          subset(!is.na(median_age) & !is.na(contbr_gender) ) %>%
          mutate(age_cut = cut(median_age, breaks = c(18, 25, 35, 45, 60, 80),
                               include.lowest = T, include.highest = T)),
-                aes(cand_nm, contb_receipt_amt)) +
+                aes(cand_nm, log(contb_receipt_amt))) +
   geom_boxplot(aes(color = contbr_gender),
              alpha = 0.05, cex = 0.1) +
   scale_color_manual(label = c("male", "female"),
@@ -776,11 +814,13 @@ wa.amt_republican_by_zip <- wa[(wa$party == "republican"), ] %>%
 wa.amt_by_zip_party <- data.frame(wa.amt_democrat_by_zip$contbr_zip,
                                   wa.amt_democrat_by_zip$amt_sum,
                                   wa.amt_democrat_by_zip$n)
-wa.amt_by_zip_party <- merge(wa.amt_by_zip_party, wa.amt_republican_by_zip[, c(1:2, 5)],
+wa.amt_by_zip_party <- merge(wa.amt_by_zip_party,
+                             wa.amt_republican_by_zip[, c(1:2, 5)],
                              by.x = 'wa.amt_democrat_by_zip.contbr_zip',
                              by.y = 'contbr_zip',
                              all = T)
-colnames(wa.amt_by_zip_party) <- c("zipcode", "amt_democrat_sum", "amt_democrat_n",
+colnames(wa.amt_by_zip_party) <- c("zipcode",
+                                   "amt_democrat_sum", "amt_democrat_n",
                                    "amt_republican_sum", "amt_republican_n")
 ```
 
@@ -804,7 +844,8 @@ wa.amt_hillary <- wa[(wa$cand_nm == "Clinton, Hillary Rodham"), ] %>%
 wa.amt_trump_hillary <- data.frame(wa.amt_trump$contbr_zip,
                                   wa.amt_trump$amt_sum,
                                   wa.amt_trump$n)
-wa.amt_trump_hillary <- merge(wa.amt_trump_hillary, wa.amt_hillary[, c(1:2, 5)],
+wa.amt_trump_hillary <- merge(wa.amt_trump_hillary,
+                              wa.amt_hillary[, c(1:2, 5)],
                              by.x = "wa.amt_trump.contbr_zip",
                              by.y = "contbr_zip",
                              all = T)
@@ -821,7 +862,7 @@ wa.amt_occupation_trump <- wa[(wa$cand_nm == "Trump, Donald J."), ] %>%
             n = n()) %>%
   arrange(desc(n))
 
-wa.amt_occupation_hillary <- wa[(wa$cand_nm == "Clinton, Hillary Rodham"), ] %>%
+wa.amt_occupation_hillary <- wa[(wa$cand_nm == "Clinton, Hillary Rodham"),] %>%
   group_by(contbr_occupation) %>%
   summarise(amt_sum = sum(contb_receipt_amt),
             amt_median = median(contb_receipt_amt),
@@ -833,30 +874,12 @@ wa.amt_occupation_hillary <- wa[(wa$cand_nm == "Clinton, Hillary Rodham"), ] %>%
 ```{r echo=FALSE}
 wa.hillary_trump <- subset(wa, cand_nm == "Clinton, Hillary Rodham" |
                              cand_nm == "Trump, Donald J.",
-                           select = -c(election_tp, cand_nm, median_rent,
-                                       time, contb_receipt_dt, contbr_first_nm))
+                           select = -c(election_tp, cand_nm, median_rent, time,
+                                       contb_receipt_dt, contbr_first_nm))
 ```
 
-```{r echo=FALSE}
-plot_trump_hillary <- function(v) {
-  ggplot(data = wa.hillary_trump, aes_string(v, "contb_receipt_amt")) +
-    geom_point(aes(color = wa.hillary_trump$cand_first_nm), alpha = 0.1, cex = 0.1) +
-    labs(color='Candidate') 
-}
-```
-
-```{r echo=FALSE, fig.width = 8, fig.height = 10}
-p1 <- plot_trump_hillary("per_capita_income")
-p2 <- plot_trump_hillary("total_population")
-p3 <- plot_trump_hillary("median_age")
-p4 <- plot_trump_hillary("percent_white")
-p5 <- plot_trump_hillary("percent_black")
-p6 <- plot_trump_hillary("percent_asian")
-p7 <- plot_trump_hillary("percent_hispanic")
-grid.arrange(p1, p2, p3, p4, p5, p6, p7, ncol = 2)
-```
-
-Moreover, I try to build a linear model to predict contribution.But it seems not good.
+Moreover, I try to build a linear model to predict contribution.
+But it seems not good.
 ```{r echo=FALSE}
 m1 <- lm(data = wa, contb_receipt_amt ~ per_capita_income)
 m2 <- update(m1, ~ . + contbr_gender)
@@ -868,22 +891,25 @@ mtable(m1, m2, m3, m4, m5, sdigits = 3)
 
 ```{r echo=FALSE, fig.width = 8, fig.height = 10}
 hillary_occupation_amt <- wa.amt_occupation_hillary %>%
-  subset(contbr_occupation != "RETIRED" & contbr_occupation != "INFORMATION REQUESTED") %>%
+  subset(contbr_occupation != "RETIRED" &
+           contbr_occupation != "INFORMATION REQUESTED") %>%
   head(20)
 trump_occupation_amt <- wa.amt_occupation_trump %>%
-  subset(contbr_occupation != "RETIRED" & contbr_occupation != "INFORMATION REQUESTED") %>%
+  subset(contbr_occupation != "RETIRED" &
+           contbr_occupation != "INFORMATION REQUESTED") %>%
   head(20)
 
 p1 <- ggplot(hillary_occupation_amt, aes(reorder(contbr_occupation, n), n)) +
-  geom_bar(stat = "identity", aes(fill = contbr_occupation)) +
+  geom_bar(stat = "identity") +
   coord_flip()
 p2 <- ggplot(trump_occupation_amt, aes(reorder(contbr_occupation, n), n)) +
-  geom_bar(stat = "identity", aes(fill = contbr_occupation)) +
+  geom_bar(stat = "identity") +
   coord_flip()
 grid.arrange(p1, p2)
 ```
 
-That is very interesting! There is strong and interesting relation between contributor occupation and candidate's backgroud.
+That is very interesting! There is strong and interesting relation between
+contributor occupation and candidate's backgroud.
 ```{r echo=FALSE, fig.width =8, fig.height = 10}
 elec_date <- as.Date('2016-11-8')
 republican_nomination_date <- as.Date('2016-7-21')
@@ -893,8 +919,10 @@ democrat_caucuses_date <- as.Date('2016-3-26')
 hillary_email <- as.Date('2016-7-22')
 
 ggplot(wa %>%
-         subset(cand_nm == "Clinton, Hillary Rodham" | cand_nm == "Trump, Donald J.") %>%
-         mutate(amt_cut = cut(contb_receipt_amt, breaks = c(0, 200, 500, 1000, 1500, 2700),
+         subset(cand_nm == "Clinton, Hillary Rodham" |
+                  cand_nm == "Trump, Donald J.") %>%
+         mutate(amt_cut = cut(contb_receipt_amt,
+                              breaks = c(0, 200, 500, 1000, 1500, 2700),
                               include.lowest = T, include.highest = T)), 
        aes(contb_receipt_dt)) +
   scale_x_date(limits = as.Date(c('2015-04-01','2016-11-8')),
@@ -903,28 +931,34 @@ ggplot(wa %>%
   geom_vline(xintercept=elec_date, color="purple", linetype="dashed") + 
   annotate("text", x=elec_date, label="Election", y=100,
             angle=90, color="purple", size=4) +
-  geom_vline(xintercept=republican_nomination_date, color="red", linetype="dashed") +
+  geom_vline(xintercept=republican_nomination_date,
+             color="red", linetype="dashed") +
   annotate("text", x=as.Date('2016-7-4'),
                 label="Nomination", y=100,
             angle=90, color="red", size=4) +
-  geom_vline(xintercept=democrat_nomination_date, color="blue", linetype="dashed") +
+  geom_vline(xintercept=democrat_nomination_date,
+             color="blue", linetype="dashed") +
   annotate("text", x=as.Date('2016-8-14'),
                 label="Nomination", y=100,
             angle=90, color="blue", size=4) +
-  geom_vline(xintercept=republican_caucuses_date, color="#DC143C", linetype="dashed") +
+  geom_vline(xintercept=republican_caucuses_date,
+             color="#DC143C", linetype="dashed") +
   annotate("text", x=republican_caucuses_date,
                 label="Caucuses", y=100,
             angle=90, color="#DC143C", size=4) +
-  geom_vline(xintercept=democrat_caucuses_date, color="#6baed6", linetype="dashed") +
+  geom_vline(xintercept=democrat_caucuses_date,
+             color="#6baed6", linetype="dashed") +
   annotate("text", x=democrat_caucuses_date,
                 label="Caucuses", y=100,
             angle=90, color="#6baed6", size=4) +
-  geom_vline(xintercept=hillary_email, color="gold", linetype="dashed") +
+  geom_vline(xintercept=hillary_email,
+             color="gold", linetype="dashed") +
   annotate("text", x=hillary_email,
                 label="Email", y=100,
             angle=90, color="black", size=5) +
   facet_wrap(~amt_cut, ncol = 1, scales = "free_y") +
-  theme(axis.text.x=element_text(angle=60, hjust=1), legend.position = "bottom")
+  theme(axis.text.x=element_text(angle=60, hjust=1),
+        legend.position = "bottom")
 ```
 
 Hillary's contribution went down to a valley after email controversy and then went up.
@@ -933,12 +967,15 @@ Cannot figure out why.
 Trump's contribution is steadily low compared with Hillary.
 
 ```{r echo=FALSE, fig.width = 8, fig.height = 12}
+income_quantile <- c(0, .2, .35, .5, .65, .8, 1)
+
 ggplot(wa %>%
          subset(!is.na(per_capita_income)) %>%
-         subset(cand_nm == "Clinton, Hillary Rodham" | cand_nm == "Trump, Donald J.") %>%
+         subset(cand_nm == "Clinton, Hillary Rodham" |
+                  cand_nm == "Trump, Donald J.") %>%
          mutate(income_cut = cut(per_capita_income,
                               breaks = quantile(per_capita_income,
-                                                probs = c(0, .2, .35, .5, .65, .8, 1)),
+                                                probs=income_quantile),
                               include.lowest = T, include.highest = T)), 
        aes(contb_receipt_dt)) +
   scale_x_date(limits = as.Date(c('2015-12-01','2016-11-8')),
@@ -947,33 +984,39 @@ ggplot(wa %>%
   geom_vline(xintercept=elec_date, color="purple", linetype="dashed") + 
   annotate("text", x=elec_date, label="Election", y=1000,
             angle=90, color="purple", size=4) +
-  geom_vline(xintercept=republican_nomination_date, color="red", linetype="dashed") +
+  geom_vline(xintercept=republican_nomination_date,
+             color="red", linetype="dashed") +
   annotate("text", x=as.Date('2016-7-4'),
                 label="Republican \nNomination", y=1000,
             angle=90, color="red", size=4) +
-  geom_vline(xintercept=democrat_nomination_date, color="blue", linetype="dashed") +
+  geom_vline(xintercept=democrat_nomination_date,
+             color="blue", linetype="dashed") +
   annotate("text", x=as.Date('2016-8-14'),
                 label="Democrat \nNomination", y=1000,
             angle=90, color="blue", size=4) +
-  geom_vline(xintercept=republican_caucuses_date, color="#DC143C", linetype="dashed") +
+  geom_vline(xintercept=republican_caucuses_date,
+             color="#DC143C", linetype="dashed") +
   annotate("text", x=republican_caucuses_date,
                 label="Republican \nCaucuses", y=1000,
             angle=90, color="#DC143C", size=4) +
-  geom_vline(xintercept=democrat_caucuses_date, color="#6baed6", linetype="dashed") +
+  geom_vline(xintercept=democrat_caucuses_date,
+             color="#6baed6", linetype="dashed") +
   annotate("text", x=democrat_caucuses_date,
                 label="Democrat \nCaucuses", y=1000,
             angle=90, color="#6baed6", size=4) +
-  geom_vline(xintercept=hillary_email, color="gold", linetype="dashed") +
-  annotate("text", x=hillary_email,
-                label="Email", y=1000,
+  geom_vline(xintercept=hillary_email,
+             color="gold", linetype="dashed") +
+  annotate("text", x=hillary_email, label="Email", y=1000,
             angle=90, color="black", size=5) +
   facet_wrap(~income_cut, ncol = 1, scales = "free_y") +
-  theme(axis.text.x=element_text(angle=60, hjust=1), legend.position = "bottom")
+  theme(axis.text.x=element_text(angle=60, hjust=1),
+        legend.position = "bottom")
 ```
 
 Almost the same trend regardless of per capita income!
 
 furthermore, I subset the map data for WA.
+And then add city on the map.
 ```{r echo=FALSE}
 mapdata.wa <- zip.map %>%
   filter(region %in% wa$contbr_zip) %>%
@@ -993,15 +1036,16 @@ ggplot() +
   coord_map(projection = "mercator") +
   geom_point(data = city.wa,
            aes(x = lng, y = lat),
-           size = log10(city.wa$population),
-           color = 'gold', alpha = 0.4) +
+           size = log10(city.wa$population), alpha = 0.4, , color = 'gold') +
   scale_fill_manual(label = c('republican', 'democratic'),
                     values = c("red", "blue")) +
   theme_map() +
   theme(legend.position = "bottom")
 ```
 
-If democrat total contribution more than republican, the whole zipcode area will be filled with blue otherwise red.The map shows that Democrat and republican seems matched.
+If democrat total contribution more than republican, the whole zipcode area will
+be filled with blue otherwise red.The map shows that Democrat and republican
+seems matched.
 
 ```{r echo=FALSE}
 ggplot() +
@@ -1073,11 +1117,15 @@ ggplot() +
 ### Talk about some of the relationships you observed in this part of the \
 investigation. Were there features that strengthened each other in terms of \
 looking at your feature(s) of interest?
-Hillary get a lot of big pocket money contribution while the democratic nomination date coming closer. 
-Hillary's contribution went down to a valley after email controversy and then went up. 
-After the peak at around first week in October, the contribution slump down. Cannot figure out why.
+Hillary get a lot of big pocket money contribution while the democratic
+nomination date coming closer. 
+Hillary's contribution went down to a valley after email controversy
+and then went up. 
+After the peak at around first week in October, the contribution slump down.
+Cannot figure out why.
 Trump's contribution is steadily low compared with Hillary. 
-Though finally Hillary win in Washington State, it is hard to say there is really some strong relation between contribution and vote. 
+Though finally Hillary win in Washington State, it is hard to say there is
+really some strong relation between contribution and vote. 
 
 ### Were there any interesting or surprising interactions between features?
 Both Trump and Hillary are more welcome by male rather than female. 
@@ -1099,9 +1147,10 @@ cand_color[c(4, 6, 18)] <- "red"
 ggplot(wa %>%
          subset(party != "others" & median_age >= 18) %>%
          subset(!is.na(median_age) & !is.na(contbr_gender) ) %>%
-         mutate(age_cut = cut(median_age, breaks = c(18, 25, 35, 45, 60, 80),
+         mutate(age_cut = cut(median_age,
+                              breaks = c(18, 25, 35, 45, 60, 80),
                               include.lowest = T, include.highest = T)),
-                aes(cand_nm, contb_receipt_amt)) +
+                aes(cand_nm, log(contb_receipt_amt))) +
   geom_boxplot(aes(color = contbr_gender),
              alpha = 0.05, cex = 0.1) +
   scale_y_log10() +
@@ -1110,36 +1159,43 @@ ggplot(wa %>%
   facet_wrap(~age_cut, ncol = 1) +
   labs(title = "Donator's age and gender structure for Candidate",
        x = "Candidate", y = "Contribution(log)") +
-  theme(axis.text.x=element_text(angle=60, hjust=1,
-                                 color = cand_color),
+  theme(axis.text.x=element_text(angle=60, hjust=1, color = cand_color),
         legend.position = 'bottom')
 ```
 
 ### Description One
-After faceting by age, the plot shows that Hillary is more welcomed by female rather than male.   
+After faceting by age, the plot shows that Hillary is more welcomed by female
+rather than male.   
 Sanders is welcomed by all age group no matter male or female. 
 
 It seems that trump have good contribution distribution.  
 
 ### Plot Two
 ```{r echo=FALSE, fig.width =8, fig.height = 10, Plot_Two}
-day_annotation <- data.frame(x=c(elec_date, hillary_email, republican_nomination_date,
-                                   democrat_nomination_date, as.Date("2016-02-01"),
+day_annotation <- data.frame(x=c(elec_date, hillary_email,
+                                 republican_nomination_date,
+                                   democrat_nomination_date,
+                                 as.Date("2016-02-01"),
                                    as.Date("2016-04-01")),
                                y=c(5000, 400, 100, 10, 50, 50),
                                label=c("Election"," Email",
                                        "Republican \nNomination",
-                                   "Democrat \nNomination", "Republican \nCaucuses",
+                                   "Democrat \nNomination",
+                                   "Republican \nCaucuses",
                                    "Democrat \nCaucuses"),
                                angle = rep(90, 6),
-                               cut = c("0-200", "200-500", "500-1000", 
-                                         "1000-1500", "1500-2700", "1500-2700"))
+                               cut = c("0-200", "200-500",
+                                       "500-1000", "1000-1500",
+                                       "1500-2700", "1500-2700"))
 
 ggplot(wa %>%
-         subset(cand_nm == "Clinton, Hillary Rodham" | cand_nm == "Trump, Donald J.") %>%
-         mutate(amt_cut = as.factor(cut(contb_receipt_amt,
-                                     breaks = c(0, 200, 500, 1000, 1500, 2700),
-                              include.lowest = T, include.highest = T))) %>%
+         subset(cand_nm == "Clinton, Hillary Rodham" |
+                  cand_nm == "Trump, Donald J.") %>%
+         mutate(amt_cut=as.factor(cut(contb_receipt_amt,
+                                      breaks = c(0, 200, 500,
+                                                 1000, 1500, 2700),
+                                      include.lowest = T,
+                                      include.highest = T))) %>%
          mutate(cut = factor(amt_cut,
                 labels = c("0-200", "200-500", "500-1000", 
                            "1000-1500", "1500-2700"))), 
@@ -1148,10 +1204,14 @@ ggplot(wa %>%
                date_breaks = "1 month", date_labels =  "%b %Y") +
   geom_freqpoly(aes(color = cand_nm), binwidth = 7) +
   geom_vline(xintercept=elec_date, color="purple") +
-  geom_vline(xintercept=republican_nomination_date, color="red", linetype="dashed") +
-  geom_vline(xintercept=democrat_nomination_date, color="blue", linetype="dashed") +
-  geom_vline(xintercept=republican_caucuses_date, color="red", linetype="dotted") +
-  geom_vline(xintercept=democrat_caucuses_date, color="blue", linetype="dotted") +
+  geom_vline(xintercept=republican_nomination_date,
+             color="red", linetype="dashed") +
+  geom_vline(xintercept=democrat_nomination_date,
+             color="blue", linetype="dashed") +
+  geom_vline(xintercept=republican_caucuses_date,
+             color="red", linetype="dotted") +
+  geom_vline(xintercept=democrat_caucuses_date,
+             color="blue", linetype="dotted") +
   geom_vline(xintercept=hillary_email) +
   facet_wrap(~cut, ncol = 1, scales = "free_y") +
   geom_text(data=day_annotation,
@@ -1161,90 +1221,87 @@ ggplot(wa %>%
 ```
 
 ### Description Two
-After working all night, finnaly I add annotation to different facet at different coordination.
+After working all night, finnaly I add annotation to different facet at
+different coordination.
 
-Hillary's contribution went down to a valley after email controversy and then went up. 
-After the peak at around first week in October, the contribution slump down. Cannot figure out why. 
+Hillary's contribution went down to a valley after email controversy and
+then went up. 
+
+After the peak at around first week in October, the contribution slump down.
+Cannot figure out why. 
+
 Trump's contribution is steadily low compared with Hillary. 
-Though finally Hillary win in Washington State, it is hard to say there is really some strong relation between contribution and vote.
+
+Though finally Hillary win in Washington State, it is hard to say there is
+really some strong relation between contribution and vote.
 
 ### Plot Three
-```{r echo=FALSE, Plot_Three}
-ggplot() +
-  geom_map(data = mapdata.wa, map = mapdata.wa,
-                    aes(map_id = region, x = long, y = lat, group = group),
-                    fill = "white", color = "lightgrey") +
-  geom_map(data = wa.amt_trump_hillary, map = mapdata.wa,
-           aes(map_id = zipcode,
-               fill = ifelse(trump_sum > hillary_sum,
-                             'red', 'blue')),
-           color = "lightgray") +
-  coord_map(projection = "mercator") +
-  geom_point(data = city.wa,
-           aes(x = lng, y = lat),
-           size = log10(city.wa$population),
-           color = 'gold', alpha = 0.4) +
-  scale_fill_manual(label = c('Trump', 'Hillary'),
-                    values = c("red", "blue")) +
-  theme_map() +
-  labs(title = "Contribution Map", fill = "Candidate") +
-  theme(legend.position = "bottom")
-```
-
-### Description Three
-Though Hillary have more contribution, it seems Trump's contribution have broader spread. 
-But there are too many blank district. It is hard to get a conclution.  
-
-### Plot Four
 ```{r echo=FALSE, fig.width = 8, fig.height = 12, Plot_Four}
 hillary_occupation_amt <- wa.amt_occupation_hillary %>%
-  subset(contbr_occupation != "RETIRED" & contbr_occupation != "INFORMATION REQUESTED") %>%
+  subset(contbr_occupation != "RETIRED" &
+           contbr_occupation != "INFORMATION REQUESTED") %>%
   head(20)
 trump_occupation_amt <- wa.amt_occupation_trump %>%
-  subset(contbr_occupation != "RETIRED" & contbr_occupation != "INFORMATION REQUESTED") %>%
+  subset(contbr_occupation != "RETIRED" &
+           contbr_occupation != "INFORMATION REQUESTED") %>%
   head(20)
 
-p1 <- ggplot(hillary_occupation_amt, aes(reorder(contbr_occupation, n), n)) +
-  geom_bar(stat = "identity", aes(fill = contbr_occupation)) +
+p1 <- ggplot(hillary_occupation_amt,
+             aes(reorder(contbr_occupation, n), n)) +
+  geom_bar(stat = "identity") +
   coord_flip() +
-  labs(title = "Occupation of Hillary's donator", x = "Occupation", y = "count",
-       fill ="Occupation")
+  labs(title = "Occupation of Hillary's donator",
+       x = "Occupation", y = "count", fill ="Occupation")
 p2 <- ggplot(trump_occupation_amt, aes(reorder(contbr_occupation, n), n)) +
-  geom_bar(stat = "identity", aes(fill = contbr_occupation)) +
+  geom_bar(stat = "identity") +
   coord_flip() +
-  labs(title = "Occupation of Trump's donator", x = "Occupation", y = "count",
-       fill = "Occupation")
+  labs(title = "Occupation of Trump's donator",
+       x = "Occupation", y = "count", fill = "Occupation")
 grid.arrange(p1, p2)
 ```
 
-This is the most exicting plot in the whole analysis. The plot shows strong and interesting relation between contributor occupation and candidate's backgroud.
+### Description Three
+This is the most exicting plot in the whole analysis. The plot shows strong and
+interesting relation between contributor occupation and candidate's backgroud.
 
-As for Hillary, the top 1 occupation is attorney, and the 11th is lawyer. Yeah, we all know that Hillary once belong to this group
+As for Hillary, the top 1 occupation is attorney, and the 11th is lawyer. 
+Yeah, we all know that Hillary once belong to this group
 The second is homemaker, it tells that Hillary really welcomed by female.
 We can also see that Hillary is welcomed by not employed and educate industry.
 
-As for Trump, the top 1 occupation is self-employed. That is amazing. Perhaps Trump have some character appreciated by self-employed, such as courage.
-And then we can see that in top 10, there are CEO, president, business owner, owner.
-What is more, Trump also have a group donator with occupation like contractor, project manager, real estate.
+As for Trump, the top 1 occupation is self-employed. That is amazing.
+Perhaps Trump have some character appreciated by self-employed, such as courage.
+And then we can see that in top 10, there are CEO,
+president, business owner, owner.
+What is more, Trump also have a group donator with occupation like contractor,
+project manager, real estate.
 
 The Hillary is supported by nurse while Trump is supported by farmer.
+
 # Reflection
 
-The contribution map shows that many district have no contribution at all. I don't know this is because of data quality or that is the truth. Maybe Washington State is not a good data set to analyze election compaign. 
+The contribution map shows that many district have no contribution at all.
+I don't know this is because of data quality or that is the truth.
+Maybe Washington State is not a good data set to analyze election compaign. 
 
-It is hard to figure out strong relation between election result and contribution since Trump paid himself. 
+It is hard to figure out strong relation between election result and
+contribution since Trump paid himself. 
 
 There is really strong relation between contribution and date.
 
-The strongest relation is candidate and their donator's occupation, which can be indicated by bar plot but not correlation.
+The strongest relation is candidate and their donator's occupation, which can be
+indicated by bar plot but not correlation.
 
-Since contribution have limit and influence by many factor, I think building model to predict contribution is nearly impossible.
+Since contribution have limit and influence by many factor, I think building
+model to predict contribution is nearly impossible.
 
-The data quality is not good enough and even missing due to different expreesion, manual error and some other unknown reason.
+The data quality is not good enough and even missing due to different
+expreesion, manual error and some other unknown reason.
 
 It would be helpful to import some vote, demographic and geographic data to cross-validate and supply the election contribution data set.
 
-I think using the larger dataset like the whole USA data set would discover some more interesting relaion.
+I think using the larger dataset like the whole USA data set would discover
+some more interesting relaion.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Reference}
 # Reference
