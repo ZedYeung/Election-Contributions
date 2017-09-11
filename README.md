@@ -25,16 +25,9 @@ Trump's contribution is steadily low compared with Hillary.
 Though finally Hillary win in Washington State, it is hard to say there is really some strong relation between contribution and vote.
 
 ### Plot Three
-![Contribution Map](./Contribution_Map.png)
-
-### Description Three
-Though Hillary have more contribution, it seems Trump's contribution have broader spread.
-But there are too many blank district. It is hard to get a conclusion.
-
-### Plot Four
 ![Occupation of donator](./Occupation_of_donator.png)
 
-
+### Description Three
 This is the most exicting plot in the whole analysis. The plot shows strong and interesting relation between contributor occupation and candidate's background.
 
 As for Hillary, the top 1 occupation is attorney, and the 11th is lawyer. Yeah, we all know that Hillary once belong to this group
