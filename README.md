@@ -11,34 +11,45 @@ Financial Contributions to Presidential Campaigns in Washington State.
 
 ### Description One
 After faceting by age, the plot shows that Hillary is more welcomed by female rather than male.
-Sanders is welcomed by all age group no matter male or female.
 
-It seems that trump have good contribution distribution.
+We can see that Hillary, Sanders and Trump are supported by both male and female across
+all age groups.
+
+Bush are supported by people from 25 to 60.
+
+Paul, Rand is supported by elder female and young male. Strange!
 
 ### Plot Two
-![Contribution Trend](./Contribution_Trend.png)
-
-### Description Two
-Hillary's contribution went down to a valley after email controversy and then went up.
-After the peak at around first week in October, the contribution slump down. Cannot figure out why.
-Trump's contribution is steadily low compared with Hillary.
-Though finally Hillary win in Washington State, it is hard to say there is really some strong relation between contribution and vote.
-
-### Plot Three
 ![Occupation of donator](./Occupation_of_donator.png)
 
-### Description Three
+### Description Two
 This is the most exicting plot in the whole analysis. The plot shows strong and interesting relation between contributor occupation and candidate's background.
 
 As for Hillary, the top 1 occupation is attorney, and the 11th is lawyer. Yeah, we all know that Hillary once belong to this group
+
 The second is homemaker, it tells that Hillary really welcomed by female.
+
 We can also see that Hillary is welcomed by not employed and educate industry.
 
 As for Trump, the top 1 occupation is self-employed. That is amazing. Perhaps Trump have some character appreciated by self-employed, such as courage.
+
 And then we can see that in top 10, there are CEO, president, business owner, owner.
+
 What is more, Trump also have a group donator with occupation like contractor, project manager, real estate.
 
 The Hillary is supported by nurse while Trump is supported by farmer.
+
+### Plot Three
+![Contribution Trend](./Contribution_Trend.png)
+
+### Description Three
+
+Hillary's contribution went down to a valley after email controversy and then went up.
+
+After the peak at around first week in October, the contribution slump down. Cannot figure out why.
+Trump's contribution is steadily low compared with Hillary.
+
+Though finally Hillary win in Washington State, it is hard to say there is really some strong relation between contribution and vote.
 
 # Reflection
 
